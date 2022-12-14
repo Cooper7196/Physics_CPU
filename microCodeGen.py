@@ -37,13 +37,17 @@ binary = [None] * 2**15
 for flag in flags:
     for instructionIndex, instruction in enumerate(instructions):
         for microCodeIndex, microcode in enumerate(instruction):
-            address = instructionIndex << 7 | flag << 4 | microCodeIndex
+            address = instructionIndex | flag << 8 | microCodeIndex << 11
             binary[address] = microcode
 
 
 EEPROMNUM = 1
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
-
 with open("microcode.bin", "wb") as f:
     f.write(bytes(binary))
+
+#Print byte in hex using format
+print(format(binary[1], '02x'))
+print(format(binary[1], '08b'))
+    
