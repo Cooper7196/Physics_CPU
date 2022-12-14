@@ -32,6 +32,7 @@ for instruction in instructions:
         instruction.append(0)
 while len(instructions) < 256:
     instructions.append(instructions[0])
+
 flags = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111]
 binary = [None] * 2**15
 for flag in flags:
@@ -40,14 +41,11 @@ for flag in flags:
             address = instructionIndex | flag << 8 | microCodeIndex << 11
             binary[address] = microcode
 
-
-EEPROMNUM = 1
+EEPROMNUM = 0
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
 with open("microcode.bin", "wb") as f:
     f.write(bytes(binary))
 
 #Print byte in hex using format
-print(format(binary[1], '02x'))
-print(format(binary[1], '08b'))
     
