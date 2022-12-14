@@ -27,6 +27,7 @@ instructions = [
     [MI|CO, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI - 0X07
     [MI|CO, RO|II|IC, CO|MI, CI|RO, RC], #JMP - 0X08
     [MI|CO, RO|II|IC, AO|DI, RC], #OUT - 0X09
+    [MI|CO, RO|II|IC, HL, RC], #HLT - 0X0A
 ]
 
 for instruction in instructions:
@@ -43,7 +44,7 @@ for flag in flags:
             address = instructionIndex | flag << 8 | microCodeIndex << 11
             binary[address] = microcode
 
-EEPROMNUM = 0
+EEPROMNUM = 1
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
 with open("microcode.bin", "wb") as f:
