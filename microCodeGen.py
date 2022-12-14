@@ -17,16 +17,18 @@ RC = 0b0000000000000010 #Reset Microcode Counter
 
 #First Byte Instruction, Second Byte Data
 instructions = [
-    [MI|CO, RO|II|IC, RC], # NOP
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|AI, RC], # LDA
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI, RC], #ADD
-    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #ADDI
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI|SU, RC], #SUB
-    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #SUBI
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RI|AO, RC], #STA
-    [MI|CO, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI
-    [MI|CO, RO|II|IC, CO|MI, CI|RO, RC], #JMP
+    [MI|CO, RO|II|IC, RC], # NOP - 0X00
+    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|AI, RC], # LDA - 0X01
+    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI, RC], #ADD - 0X02
+    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #ADDI - 0X03
+    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI|SU, RC], #SUB - 0X04
+    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #SUBI - 0X05
+    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RI|AO, RC], #STA - 0X06
+    [MI|CO, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI - 0X07
+    [MI|CO, RO|II|IC, CO|MI, CI|RO, RC], #JMP - 0X08
+    [MI|CO, RO|II|IC, AO|DI, RC], #OUT - 0X09
 ]
+
 for instruction in instructions:
     while len(instruction) < 16:
         instruction.append(0)
@@ -45,7 +47,4 @@ EEPROMNUM = 0
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
 with open("microcode.bin", "wb") as f:
-    f.write(bytes(binary))
-
-#Print byte in hex using format
-    
+    f.write(bytes(binary))    
