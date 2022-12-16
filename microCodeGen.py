@@ -1,3 +1,4 @@
+import copy
 # Microcode binary values
 HL = 0b1000000000000000 #Halt
 RI = 0b0100000000000000 #RAM In
@@ -16,36 +17,55 @@ SU = 0b0000000000000100 #Subtract
 RC = 0b0000000000000010 #Reset Microcode Counter
 
 #First Byte Instruction, Second Byte Data
-instructions = [
-    [MI|CO, RO|II|IC, RC], # NOP - 0X00
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|AI, RC], # LDA - 0X01
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI, RC], #ADD - 0X02
-    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #ADDI - 0X03
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI|SU, RC], #SUB - 0X04
-    [MI|CO, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #SUBI - 0X05
-    [MI|CO, RO|II|IC, CO|MI, MI|RO|IC, RI|AO, RC], #STA - 0X06
-    [MI|CO, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI - 0X07
-    [MI|CO, RO|II|IC, CO|MI, CI|RO, RC], #JMP - 0X08
-    [MI|CO, RO|II|IC, AO|DI, RC], #OUT - 0X09
-    [MI|CO, RO|II|IC, HL, RC], #HLT - 0X0A
+microcodeTemplate = [
+    [CO|MI, RO|II|IC, RC], # NOP - 0X00
+    [CO|MI, RO|II|IC, CO|MI, MI|RO|IC, RO|AI, RC], # LDA - 0X01
+    [CO|MI, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI, RC], #ADD - 0X02
+    [CO|MI, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #ADDI - 0X03
+    [CO|MI, RO|II|IC, CO|MI, MI|RO|IC, RO|BI, EO|AI|SU, RC], #SUB - 0X04
+    [CO|MI, RO|II|IC, CO|MI, BI|RO|IC, EO|AI, RC], #SUBI - 0X05
+    [CO|MI, RO|II|IC, CO|MI, MI|RO|IC, RI|AO, RC], #STA - 0X06
+    [CO|MI, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI - 0X07
+    [CO|MI, RO|II|IC, CO|MI, CI|RO, RC], #JMP - 0X08
+    [CO|MI, RO|II|IC, RC], # JC - 0X09
+    [CO|MI, RO|II|IC, RC], # JZ - 0X0a
+    [CO|MI, RO|II|IC, AO|DI, RC], #OUT - 0X0b
+    [CO|MI, RO|II|IC, HL, RC], #HLT - 0X0a
 ]
-
-for instruction in instructions:
+microcode = [None, None, None, None]
+for instruction in microcodeTemplate:
     while len(instruction) < 16:
         instruction.append(0)
-while len(instructions) < 256:
-    instructions.append(instructions[0])
-
-flags = [0b000, 0b001, 0b010, 0b011, 0b100, 0b101, 0b110, 0b111]
-binary = [None] * 2**15
+while len(microcodeTemplate) < 2**5:
+    microcodeTemplate.append(microcodeTemplate[0])
+flags = [0b00, 0b01, 0b10, 0b11]
 for flag in flags:
-    for instructionIndex, instruction in enumerate(instructions):
-        for microCodeIndex, microcode in enumerate(instruction):
-            address = instructionIndex | flag << 8 | microCodeIndex << 11
-            binary[address] = microcode
+    for instruction in microcodeTemplate:
+        for i in range(len(microcode)):
+            microcode[i] = copy.deepcopy(microcodeTemplate)
+            if i == 0b01:
+                microcode[i][0x09] = microcodeTemplate[0x08]
+            if i == 0b10:
+                microcode[i][0x0a] = microcodeTemplate[0x08]
+            if i == 0b11:
+                microcode[i][0x09] = microcodeTemplate[0x08]
+                microcode[i][0x0a] = microcodeTemplate[0x08]
 
-EEPROMNUM = 1
+# print(microcode)
+binary = [None] * 2**11
+for flag in flags:
+    for instructionIndex, instruction in enumerate(microcodeTemplate):
+        for microCodeIndex, microcode in enumerate(instruction):
+            address = instructionIndex | flag << 5 | microCodeIndex << 7
+            binary[address] = microcode
+for index, value in enumerate(binary):
+    if value == None:
+        print(format(index, '011b'))
+with open("microcode.txt", "w") as f:
+    for i in range(len(binary)):
+        f.write(str(binary[i]))
+EEPROMNUM = 0
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
 with open("microcode.bin", "wb") as f:
-    f.write(bytes(binary))    
+    f.write(bytes(binary))
