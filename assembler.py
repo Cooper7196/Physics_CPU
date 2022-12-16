@@ -25,8 +25,10 @@ instructions = {
     'STA': (2, 0x06),
     'LDI': (2, 0x07),
     'JMP': (2, 0x08),
-    'OUT': (1, 0x09),
-    'HLT': (1, 0x0A),
+    'JC': (2, 0x09),
+    'JZ': (2, 0x0a),
+    'OUT': (1, 0x0b),
+    'HLT': (1, 0x0c),
 }
  
 symbols = {}

@@ -27,8 +27,8 @@ microcodeTemplate = [
     [CO|MI, RO|II|IC, CO|MI, MI|RO|IC, RI|AO, RC], #STA - 0X06
     [CO|MI, RO|II|IC, CO|MI, AI|RO|IC, RC], #LDI - 0X07
     [CO|MI, RO|II|IC, CO|MI, CI|RO, RC], #JMP - 0X08
-    [CO|MI, RO|II|IC, RC], # JC - 0X09
-    [CO|MI, RO|II|IC, RC], # JZ - 0X0a
+    [CO|MI, RO|II|IC, CO|MI, IC, RC], # JC - 0X09
+    [CO|MI, RO|II|IC, CO|MI, IC, RC], # JZ - 0X0a
     [CO|MI, RO|II|IC, AO|DI, RC], #OUT - 0X0b
     [CO|MI, RO|II|IC, HL, RC], #HLT - 0X0a
 ]
@@ -44,9 +44,9 @@ for flag in flags:
         for i in range(len(microcode)):
             microcode[i] = copy.deepcopy(microcodeTemplate)
             if i == 0b01:
-                microcode[i][0x09] = microcodeTemplate[0x08]
-            if i == 0b10:
                 microcode[i][0x0a] = microcodeTemplate[0x08]
+            if i == 0b10:
+                microcode[i][0x09] = microcodeTemplate[0x08]
             if i == 0b11:
                 microcode[i][0x09] = microcodeTemplate[0x08]
                 microcode[i][0x0a] = microcodeTemplate[0x08]
@@ -54,17 +54,17 @@ for flag in flags:
 # print(microcode)
 binary = [None] * 2**11
 for flag in flags:
-    for instructionIndex, instruction in enumerate(microcodeTemplate):
-        for microCodeIndex, microcode in enumerate(instruction):
-            address = instructionIndex | flag << 5 | microCodeIndex << 7
-            binary[address] = microcode
+    for instructionIndex, instruction in enumerate(microcode[flag]):
+        for controlIndex, control in enumerate(instruction):
+            address = instructionIndex | flag << 5 | controlIndex << 7
+            binary[address] = control
 for index, value in enumerate(binary):
     if value == None:
         print(format(index, '011b'))
 with open("microcode.txt", "w") as f:
     for i in range(len(binary)):
         f.write(str(binary[i]))
-EEPROMNUM = 0
+EEPROMNUM = 1
 for i in range(len(binary)):
     binary[i] = (binary[i] >> (EEPROMNUM * 8) & 0b11111111)
 with open("microcode.bin", "wb") as f:

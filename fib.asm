@@ -9,8 +9,8 @@ loop:
     STA 0x20
     LDA 0x21
     ADD 0x20
-    OUT
     JC stop
+    OUT
     JMP loop
 stop:
     HLT
